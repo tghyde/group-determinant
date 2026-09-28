@@ -183,8 +183,16 @@ table.gt td.hl2 { background: var(--hl-bg); }
 table.gt td.idcell { color: var(--muted); }
 
 /* ---- polynomials ---- */
-.xmat .katex-display { margin: .15rem 0; text-align: left; }
-.xmat .katex-display > .katex { text-align: left; }
+.matwrap { position: relative; display: inline-block; padding: 0 .55em; }
+.matwrap table { margin: 0 .1em; }
+table.gt.x thead th { visibility: hidden; }
+table.gt.x thead th.corner, table.gt.x tbody th { display: none; }
+table.gt.x td, table.gt.x th { border-color: transparent; }
+table.gt.x td.hl { background: var(--hover-bg); }
+table.gt.x td.hl2 { background: var(--hl-bg); }
+.bracket { position: absolute; bottom: 0; width: .55em; border: 2px solid var(--fg); }
+.bracket.left { left: 0; border-right: none; }
+.bracket.right { right: 0; border-left: none; }
 .poly { line-height: 1.95; word-spacing: .15em; }
 .poly .t { white-space: nowrap; margin-right: .35em; }
 .poly .katex { font-size: 1em; }
@@ -275,8 +283,8 @@ footer.doc { margin-top: 2rem; text-align: center; font-family: var(--font-ui); 
 <div class="htmlcard definition">
   <p class="card-title">Definition</p>
   <p>Let <span class="katex-inline" data-tex="G=\{g_1,\dots,g_n\}"></span> be a finite group, and let <span class="katex-inline" data-tex="x_g"></span> be an independent variable for each element <span class="katex-inline" data-tex="g\in G"></span>. The <strong>group determinant</strong> of <span class="katex-inline" data-tex="G"></span> is the determinant of the <span class="katex-inline" data-tex="n\times n"></span> matrix whose <span class="katex-inline" data-tex="(i,j)"></span> entry is the variable indexed by the product <span class="katex-inline" data-tex="g_i g_j"></span>:</p>
-  <div class="katex-display-target" data-tex="D_G \;=\; \det\bigl(x_{g_i g_j}\bigr)_{1\le i,j\le n}."></div>
-  <p class="note">It is a homogeneous polynomial of degree <span class="katex-inline" data-tex="n"></span> in <span class="katex-inline" data-tex="n"></span> variables with integer coefficients, independent of how the elements are ordered. Frobenius originally used <span class="katex-inline" data-tex="\det(x_{g_i g_j^{-1}})"></span>, which differs from <span class="katex-inline" data-tex="D_G"></span> only by the sign of the permutation <span class="katex-inline" data-tex="g\mapsto g^{-1}"></span> of <span class="katex-inline" data-tex="G"></span>.</p>
+  <div class="katex-display-target" data-tex="\Delta_G \;=\; \det\bigl(x_{g_i g_j}\bigr)_{1\le i,j\le n}."></div>
+  <p class="note">It is a homogeneous polynomial of degree <span class="katex-inline" data-tex="n"></span> in <span class="katex-inline" data-tex="n"></span> variables with integer coefficients, independent of how the elements are ordered. Frobenius originally used <span class="katex-inline" data-tex="\det(x_{g_i g_j^{-1}})"></span>, which differs from <span class="katex-inline" data-tex="\Delta_G"></span> only by the sign of the permutation <span class="katex-inline" data-tex="g\mapsto g^{-1}"></span> of <span class="katex-inline" data-tex="G"></span>.</p>
 </div>
 
 <footer class="doc">Factorizations computed with <a href="https://www.sagemath.org/">SageMath</a> and <a href="https://www.gap-system.org/">GAP</a> and verified against the determinant. Built for <a href="https://tghyde.github.io/math301-fall2026/">Math 301</a>.</footer>
@@ -332,7 +340,7 @@ footer.doc { margin-top: 2rem; text-align: center; font-family: var(--font-ui); 
   function buildTable(g, kind) {
     const n = g.order, names = g.names, T = currentTable(g);
     const tbl = document.createElement("table");
-    tbl.className = "gt"; tbl.dataset.kind = kind;
+    tbl.className = "gt " + kind; tbl.dataset.kind = kind;
     tbl.style.setProperty("--cell", cellSize(n));
     const thead = document.createElement("thead"); const hr = document.createElement("tr");
     const corner = document.createElement("th"); corner.className = "corner";
@@ -358,14 +366,18 @@ footer.doc { margin-top: 2rem; text-align: center; font-family: var(--font-ui); 
   }
 
   function buildMatrix(g) {
-    const n = g.order, names = g.names, T = currentTable(g);
-    const rows = [];
-    for (let i = 0; i < n; i++) rows.push(T[i].map(k => "x_{" + names[k] + "}").join(" & "));
-    const tex = "\\begin{bmatrix}" + rows.join(" \\\\ ") + "\\end{bmatrix}";
-    const d = document.createElement("div"); d.className = "xmat";
-    d.style.fontSize = cellSize(n);
-    d.innerHTML = K(tex, true);
-    return d;
+    const wrap = document.createElement("div"); wrap.className = "matwrap";
+    const tbl = buildTable(g, "x");
+    wrap.appendChild(tbl);
+    const L = document.createElement("span"); L.className = "bracket left";
+    const R = document.createElement("span"); R.className = "bracket right";
+    wrap.appendChild(L); wrap.appendChild(R);
+    // brackets span the data rows only (the hidden header row keeps the rows level with the multiplication table)
+    requestAnimationFrame(() => {
+      const top = tbl.tHead.offsetHeight;
+      L.style.top = top + "px"; R.style.top = top + "px";
+    });
+    return wrap;
   }
 
   function attachHighlight() {
@@ -437,7 +449,7 @@ footer.doc { margin-top: 2rem; text-align: center; font-family: var(--font-ui); 
     const totalTerms = F.reduce((a, f) => a + f.nterms, 0);
     const allLinear = F.every(f => f.dim === 1);
     const sign = g.sign < 0 ? "-" : "";
-    const lhs = "D_{" + g.latex + "}";
+    const lhs = "\\Delta_{" + g.latex + "}";
 
     if (allLinear && totalTerms <= 25) {
       // inline product
