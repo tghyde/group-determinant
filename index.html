@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Group Determinant — Math 301</title>
+<link rel="icon" href="favicon.png">
+<script>(function(){try{var t=localStorage.getItem('hwg-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"></script>
+<style>
+:root {
+  --bg: #faf9f6;
+  --fg: #20242a;
+  --muted: #5d646f;
+  --accent: #24589f;
+  --alert: #b3223a;
+  --border: #dcdad0;
+  --card-bg: #efeee8;
+  --sol-bg: #e6efe6;
+  --sol-accent: #2c6a3f;
+  --code-bg: #f1f0ea;
+  --hover-bg: #e2e8f3;
+  --hl-bg: #d3def2;
+  --font-body: Charter, "Bitstream Charter", Georgia, "Times New Roman", serif;
+  --font-ui: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15171c; --fg: #e7e5e0; --muted: #9aa1ad; --accent: #8db1ea; --alert: #e87a90;
+    --border: #33363e; --card-bg: #1f222a; --sol-bg: #1c2721; --sol-accent: #98cda5;
+    --code-bg: #22252d; --hover-bg: #2b3242; --hl-bg: #34405a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15171c; --fg: #e7e5e0; --muted: #9aa1ad; --accent: #8db1ea; --alert: #e87a90;
+  --border: #33363e; --card-bg: #1f222a; --sol-bg: #1c2721; --sol-accent: #98cda5;
+  --code-bg: #22252d; --hover-bg: #2b3242; --hl-bg: #34405a;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; font-size: clamp(15px, 0.7vw + 7px, 24px); }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { background: var(--hover-bg); }
+main {
+  max-width: 100rem;
+  margin: 0 auto;
+  padding: .6rem 1.4rem 3rem;
+}
+
+/* ---- hero (as on the course site, but shorter for a projector) ---- */
+.hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100rem;
+  margin: 0 auto;
+  min-height: 6rem;
+  padding: .8rem 1.1rem;
+}
+.hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero header.doc {
+  position: relative;
+  margin: 0;
+  padding: .8rem 2.2rem;
+  background: var(--card-bg);
+  text-align: center;
+}
+header.doc .course {
+  font-family: var(--font-ui);
+  font-size: .8rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 .3rem;
+}
+header.doc .course a { color: var(--muted); }
+header.doc .course a:hover { color: var(--accent); background: none; }
+header.doc h1 { font-size: 1.5rem; line-height: 1.25; margin: 0; font-weight: 700; }
+
+#themetoggle {
+  position: fixed; top: .5rem; right: .7rem; z-index: 60;
+  background: var(--card-bg); color: var(--fg); border: none;
+  padding: .3rem .6rem; font-size: 1rem; line-height: 1; cursor: pointer;
+}
+#themetoggle:hover { background: var(--code-bg); }
+
+/* ---- controls ---- */
+.controls {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: .6rem 1.2rem;
+  margin: .9rem 0 .9rem;
+  font-family: var(--font-ui);
+  font-size: .95rem;
+}
+.controls label { color: var(--muted); letter-spacing: .06em; text-transform: uppercase; font-size: .8rem; font-weight: 600; }
+select#group {
+  font-family: var(--font-ui);
+  font-size: 1.05rem;
+  padding: .35rem 2.2rem .35rem .8rem;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--fg);
+  cursor: pointer;
+  appearance: none; -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%), linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+  background-position: calc(100% - 1.1rem) 55%, calc(100% - .75rem) 55%;
+  background-size: .35rem .35rem, .35rem .35rem;
+  background-repeat: no-repeat;
+}
+.navbtn {
+  font-family: var(--font-ui);
+  background: var(--card-bg); color: var(--accent);
+  border: none; padding: .35rem .7rem; font-size: 1rem; cursor: pointer;
+}
+.navbtn:hover { background: var(--accent); color: var(--bg); }
+.hint { color: var(--muted); font-size: .8rem; }
+
+/* ---- cards ---- */
+.htmlcard {
+  background: var(--card-bg);
+  padding: .9rem 1.2rem 1rem;
+  margin: 0 0 .9rem;
+}
+.card-title {
+  font-family: var(--font-ui);
+  font-size: .82rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 .5rem;
+  display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap;
+}
+.card-title .sub { text-transform: none; letter-spacing: normal; font-weight: 400; color: var(--muted); font-size: .85rem; }
+.card-title .katex { font-size: 1.05em; text-transform: none; letter-spacing: normal; }
+.row { display: flex; gap: .9rem; align-items: flex-start; flex-wrap: wrap; }
+.row > .htmlcard { flex: 0 1 auto; max-width: 100%; }
+.row > .htmlcard.grow { flex: 1 1 22rem; }
+p { margin: 0 0 .6em; }
+.muted { color: var(--muted); }
+.small { font-size: .9rem; }
+
+/* ---- presentation card ---- */
+.pres { display: flex; gap: 2.5rem; align-items: baseline; flex-wrap: wrap; }
+.pres .katex { font-size: 1.15em; }
+.elemlist { flex: 1 1 30rem; min-width: 0; line-height: 1.8; }
+.elemlist .t { white-space: nowrap; margin-right: .45em; }
+.elemlist .katex { font-size: 1.05em; }
+.toggle { font-family: var(--font-ui); font-size: .85rem; color: var(--muted); display: inline-flex; align-items: center; gap: .4rem; cursor: pointer; }
+.toggle input { accent-color: var(--accent); }
+.linkbtn { font-family: var(--font-ui); font-size: .8rem; color: var(--accent); background: var(--bg); border: none; padding: .12rem .5rem; cursor: pointer; }
+.linkbtn:hover { background: var(--accent); color: var(--bg); }
+
+/* ---- group tables ---- */
+.tablewrap { overflow-x: auto; max-width: 100%; }
+table.gt {
+  border-collapse: collapse;
+  font-size: var(--cell, 1rem);
+  line-height: 1;
+}
+table.gt td, table.gt th {
+  border: 1px solid var(--border);
+  padding: .22em .4em;
+  text-align: center;
+  white-space: nowrap;
+  transition: background-color .08s;
+}
+table.gt th {
+  background: var(--code-bg);
+  font-weight: 400;
+}
+table.gt th.corner { background: transparent; border-color: transparent; }
+table.gt th.corner span { color: var(--muted); font-family: var(--font-ui); font-size: .7em; }
+table.gt tr.hl th, table.gt th.hl { background: var(--hl-bg); }
+table.gt td.hl { background: var(--hover-bg); }
+table.gt td.hl2 { background: var(--hl-bg); }
+table.gt td.idcell { color: var(--muted); }
+
+/* ---- polynomials ---- */
+.poly { line-height: 1.95; word-spacing: .15em; }
+.poly .t { white-space: nowrap; margin-right: .35em; }
+.poly .katex { font-size: 1em; }
+.factorline { margin: .2rem 0 .8rem; }
+.factorline .katex { font-size: 1.18em; }
+.factor { margin: .55rem 0 .7rem; display: flex; gap: .6rem; align-items: baseline; flex-wrap: wrap; }
+.factor .flabel { white-space: nowrap; }
+.factor .flabel .katex { font-size: 1.05em; }
+.factor .fbody { flex: 1 1 30rem; min-width: 0; }
+.factor .ftools { font-family: var(--font-ui); font-size: .78rem; color: var(--muted); white-space: nowrap; }
+.factor .ftools button {
+  font: inherit; color: var(--accent); background: var(--bg); border: none; padding: .15rem .5rem; cursor: pointer; margin-left: .3rem;
+}
+.factor .ftools button:hover { background: var(--accent); color: var(--bg); }
+.inlineprod .t { margin-right: .3em; }
+.inlineprod .paren { font-size: 1.25em; margin: 0 .05em; }
+.detmat {
+  display: inline-grid;
+  gap: .25rem 1rem;
+  align-items: center;
+  border-left: 2px solid var(--fg);
+  border-right: 2px solid var(--fg);
+  border-radius: .55rem;
+  padding: .3rem .7rem;
+  margin: .2rem 0;
+  vertical-align: middle;
+  max-width: 100%;
+}
+.detmat > div { min-width: 0; }
+.detwrap { display: flex; align-items: center; gap: .5rem; flex-wrap: nowrap; }
+.detwrap .detmat { flex: 0 1 auto; }
+.zetanote { margin-top: .5rem; }
+.note { font-size: .92rem; color: var(--muted); margin-top: .5rem; }
+.defrow { display: flex; align-items: center; gap: 1.5rem 2.5rem; flex-wrap: wrap; }
+.deftext { flex: 1 1 34rem; }
+.defformula { flex: 0 0 auto; }
+.defformula .katex-display { margin: 0; }
+.defformula .katex { font-size: 1.2em; }
+.definition .note { margin-top: .4rem; }
+footer.doc { margin-top: 2rem; text-align: center; font-family: var(--font-ui); font-size: .78rem; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { body { transition: background-color .2s ease, color .2s ease; } }
+@media print { #themetoggle, .controls { display: none; } }
+</style>
+</head>
+<body id="top">
+<button id="themetoggle" aria-label="Toggle light or dark theme" title="Toggle light/dark"></button>
+<div class="hero">
+<img src="banner.png" alt="">
+<header class="doc">
+<p class="course"><a href="https://tghyde.github.io/math301-fall2026/">Math 301: Representation Theory</a> · Fall 2026</p>
+<h1>The Group Determinant</h1>
+</header>
+</div>
+<main>
+
+<div class="controls">
+  <label for="group">Group</label>
+  <button class="navbtn" id="prev" title="Previous group (←)">◀</button>
+  <select id="group"></select>
+  <button class="navbtn" id="next" title="Next group (→)">▶</button>
+  <span class="hint">use ← → to switch groups</span>
+</div>
+
+<div class="htmlcard" id="card-pres">
+  <p class="card-title">Presentation <span class="sub" id="pres-sub"></span></p>
+  <div class="pres">
+    <div id="presentation"></div>
+    <div class="elemlist" id="elements"></div>
+  </div>
+  <div class="note" id="pres-note"></div>
+</div>
+
+<div class="row">
+  <div class="htmlcard">
+    <p class="card-title">Multiplication table <span class="sub">row <span class="katex-inline" data-tex="g"></span>, column <span class="katex-inline" data-tex="h"></span>, entry <span class="katex-inline" data-tex="gh"></span></span></p>
+    <div class="tablewrap" id="multtable"></div>
+  </div>
+  <div class="htmlcard">
+    <p class="card-title">The matrix <span class="katex-inline" data-tex="(x_{gh})_{g,h\in G}"></span></p>
+    <div class="tablewrap" id="xmatrix"></div>
+  </div>
+</div>
+
+<div class="htmlcard definition">
+  <p class="card-title">Definition</p>
+  <div class="defrow">
+    <div class="deftext">For a finite group <span class="katex-inline" data-tex="G=\{g_1,\dots,g_n\}"></span> with an independent variable <span class="katex-inline" data-tex="x_g"></span> for each element <span class="katex-inline" data-tex="g\in G"></span>, the <strong>group determinant</strong> of <span class="katex-inline" data-tex="G"></span> is the determinant of the <span class="katex-inline" data-tex="n\times n"></span> matrix whose <span class="katex-inline" data-tex="(i,j)"></span> entry is the variable indexed by the product <span class="katex-inline" data-tex="g_i g_j"></span>:</div>
+    <div class="defformula katex-display-target" data-tex="\Theta(G) \;=\; \det\bigl(x_{g_i g_j}\bigr)_{1\le i,j\le n}"></div>
+  </div>
+  <p class="note">It is a homogeneous polynomial of degree <span class="katex-inline" data-tex="n"></span> in <span class="katex-inline" data-tex="n"></span> variables with integer coefficients, independent of how the elements are ordered. Frobenius originally used <span class="katex-inline" data-tex="\det(x_{g_i g_j^{-1}})"></span>, which differs from <span class="katex-inline" data-tex="\Theta(G)"></span> only by the sign of the permutation <span class="katex-inline" data-tex="g\mapsto g^{-1}"></span> of <span class="katex-inline" data-tex="G"></span>.</p>
+</div>
+</div>
+
+<div class="htmlcard" id="card-fact">
+  <p class="card-title">Factorization <span class="sub" id="fact-sub"></span></p>
+  <div id="factorization"></div>
+  <div class="zetanote" id="zetanote"></div>
+</div>
+
+<footer class="doc">Factorizations computed with <a href="https://www.sagemath.org/">SageMath</a> and <a href="https://www.gap-system.org/">GAP</a> and verified against the determinant. Built for <a href="https://tghyde.github.io/math301-fall2026/">Math 301</a>.</footer>
+</main>
+
+<script src="data.js"></script>
+<script>
+(function() {
+  // ---------- helpers ----------
+  const K = (tex, display) => katex.renderToString(tex, {throwOnError: false, displayMode: !!display, output: "html"});
+  const $ = (id) => document.getElementById(id);
+  const AUTO_EXPAND = 130;      // factors with more terms than this start in determinant form
+
+  // render static math in the page
+  document.querySelectorAll(".katex-inline").forEach(el => { el.innerHTML = K(el.dataset.tex); });
+  document.querySelectorAll(".katex-display-target").forEach(el => { el.innerHTML = K(el.dataset.tex, true); });
+
+  const groups = window.GROUP_DATA;
+  const byId = Object.fromEntries(groups.map(g => [g.id, g]));
+
+  // ---------- dropdown ----------
+  const sel = $("group");
+  const cats = [];
+  groups.forEach(g => { if (!cats.includes(g.category)) cats.push(g.category); });
+  cats.forEach(c => {
+    const og = document.createElement("optgroup"); og.label = c;
+    groups.filter(g => g.category === c).forEach(g => {
+      const o = document.createElement("option"); o.value = g.id; o.textContent = g.label; og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+
+  // ---------- state ----------
+  let ltr = false;   // compose permutations left-to-right?
+
+  function currentTable(g) {
+    if (!(g.permgroup && ltr)) return g.table;
+    const n = g.order; const t = [];
+    for (let i = 0; i < n; i++) { t.push([]); for (let j = 0; j < n; j++) t[i].push(g.table[j][i]); }
+    return t;
+  }
+
+  function cellSize(n) {
+    if (n <= 6) return "1.15rem";
+    if (n <= 9) return "1.05rem";
+    if (n <= 12) return ".95rem";
+    if (n <= 14) return ".88rem";
+    if (n <= 21) return ".76rem";
+    return ".66rem";
+  }
+
+  // ---------- tables ----------
+  function buildTable(g, kind) {
+    const n = g.order, names = g.names, T = currentTable(g);
+    const tbl = document.createElement("table");
+    tbl.className = "gt"; tbl.dataset.kind = kind;
+    tbl.style.setProperty("--cell", cellSize(n));
+    const thead = document.createElement("thead"); const hr = document.createElement("tr");
+    const corner = document.createElement("th"); corner.className = "corner";
+    corner.innerHTML = "";
+    hr.appendChild(corner);
+    for (let j = 0; j < n; j++) { const th = document.createElement("th"); th.innerHTML = K(names[j]); th.dataset.j = j; hr.appendChild(th); }
+    thead.appendChild(hr); tbl.appendChild(thead);
+    const tb = document.createElement("tbody");
+    for (let i = 0; i < n; i++) {
+      const tr = document.createElement("tr"); tr.dataset.i = i;
+      const th = document.createElement("th"); th.innerHTML = K(names[i]); tr.appendChild(th);
+      for (let j = 0; j < n; j++) {
+        const td = document.createElement("td"); const k = T[i][j];
+        td.dataset.i = i; td.dataset.j = j;
+        td.innerHTML = kind === "mult" ? K(names[k]) : K("x_{" + names[k] + "}");
+        if (k === g.identity) td.classList.add("idcell");
+        tr.appendChild(td);
+      }
+      tb.appendChild(tr);
+    }
+    tbl.appendChild(tb);
+    return tbl;
+  }
+
+  function attachHighlight() {
+    const tables = document.querySelectorAll("table.gt");
+    function clear() {
+      document.querySelectorAll("table.gt .hl, table.gt .hl2").forEach(e => e.classList.remove("hl", "hl2"));
+    }
+    function hl(i, j) {
+      clear();
+      tables.forEach(t => {
+        const rows = t.tBodies[0].rows;
+        rows[i].classList.add("hl");
+        t.tHead.rows[0].cells[j + 1].classList.add("hl");
+        for (let jj = 0; jj < rows[i].cells.length - 1; jj++) rows[i].cells[jj + 1].classList.add("hl");
+        for (let ii = 0; ii < rows.length; ii++) rows[ii].cells[j + 1].classList.add("hl");
+        rows[i].cells[j + 1].classList.remove("hl"); rows[i].cells[j + 1].classList.add("hl2");
+      });
+    }
+    tables.forEach(t => {
+      t.addEventListener("mouseover", ev => {
+        const td = ev.target.closest("td"); if (!td) return;
+        hl(+td.dataset.i, +td.dataset.j);
+      });
+      t.addEventListener("mouseleave", clear);
+    });
+  }
+
+  // ---------- polynomials ----------
+  function termSpan(t, first) {
+    const s = document.createElement("span"); s.className = "t";
+    const lead = first ? (t.sign < 0 ? "-" : "") : (t.sign < 0 ? "-\\," : "+\\,");
+    s.innerHTML = K(lead + t.tex);
+    return s;
+  }
+  function polyDiv(terms) {
+    const d = document.createElement("div"); d.className = "poly";
+    const frag = document.createDocumentFragment();
+    terms.forEach((t, i) => frag.appendChild(termSpan(t, i === 0)));
+    d.appendChild(frag);
+    return d;
+  }
+  function linearFormSpan(tex) {
+    // a matrix entry: split at " + " / " - " into wrappable pieces
+    const d = document.createElement("div"); d.className = "poly";
+    const parts = tex.split(/ (?=[+-] )/);
+    parts.forEach(p => {
+      const s = document.createElement("span"); s.className = "t";
+      s.innerHTML = K(p.replace(/^([+-]) /, "$1\\,"));
+      d.appendChild(s);
+    });
+    return d;
+  }
+  function detView(f) {
+    const w = document.createElement("div"); w.className = "detwrap";
+    const lab = document.createElement("span"); lab.innerHTML = K("\\det");
+    w.appendChild(lab);
+    const m = document.createElement("div"); m.className = "detmat";
+    m.style.gridTemplateColumns = "repeat(" + f.dim + ", auto)";
+    f.matrix.forEach(row => row.forEach(entry => m.appendChild(linearFormSpan(entry))));
+    w.appendChild(m);
+    return w;
+  }
+
+  function factorName(k) { return "\\Phi_{" + (k + 1) + "}"; }
+
+  function buildFactorization(g) {
+    const box = $("factorization"); box.innerHTML = "";
+    const F = g.factors;
+    const totalTerms = F.reduce((a, f) => a + f.nterms, 0);
+    const allLinear = F.every(f => f.dim === 1);
+    const sign = g.sign < 0 ? "-" : "";
+    const lhs = "\\Theta(" + g.latex + ")";
+
+    if (allLinear && totalTerms <= 25) {
+      // inline product
+      const line = document.createElement("div"); line.className = "poly inlineprod";
+      const eq = document.createElement("span"); eq.className = "t"; eq.innerHTML = K(lhs + " = " + sign);
+      line.appendChild(eq);
+      F.forEach(f => {
+        const open = document.createElement("span"); open.className = "t paren"; open.textContent = "(";
+        line.appendChild(open);
+        f.terms.forEach((t, i) => line.appendChild(termSpan(t, i === 0)));
+        const close = document.createElement("span"); close.className = "t paren"; close.textContent = ")";
+        line.appendChild(close);
+      });
+      box.appendChild(line);
+      return;
+    }
+
+    // product line
+    const prod = F.map((f, k) => factorName(k) + (f.dim > 1 ? "^{" + f.dim + "}" : "")).join("\\,");
+    const line = document.createElement("div"); line.className = "factorline";
+    line.innerHTML = K(lhs + " \\;=\\; " + sign + prod + "\\qquad\\text{where}");
+    box.appendChild(line);
+
+    F.forEach((f, k) => {
+      const row = document.createElement("div"); row.className = "factor";
+      const lab = document.createElement("span"); lab.className = "flabel"; lab.innerHTML = K(factorName(k) + " \\;=\\;");
+      row.appendChild(lab);
+      const body = document.createElement("div"); body.className = "fbody";
+      row.appendChild(body);
+      if (f.dim > 1) {
+        const tools = document.createElement("span"); tools.className = "ftools";
+        const info = document.createElement("span");
+        info.textContent = "degree " + f.dim + ", " + f.nterms + " terms";
+        const btn = document.createElement("button");
+        tools.appendChild(info); tools.appendChild(btn);
+        row.appendChild(tools);
+        let expanded = f.nterms <= AUTO_EXPAND;
+        let cache = null;
+        function show() {
+          body.innerHTML = "";
+          if (expanded) {
+            if (!cache) cache = polyDiv(f.terms);
+            body.appendChild(cache);
+            btn.textContent = "show as determinant";
+          } else {
+            body.appendChild(detView(f));
+            btn.textContent = "expand";
+          }
+        }
+        btn.addEventListener("click", () => { expanded = !expanded; show(); });
+        show();
+      } else {
+        body.appendChild(polyDiv(f.terms));
+      }
+      box.appendChild(row);
+    });
+  }
+
+  // ---------- page ----------
+  function render(id) {
+    const g = byId[id]; if (!g) return;
+    sel.value = id;
+    try { history.replaceState(null, "", "#" + id); } catch (e) {}
+
+    $("pres-sub").innerHTML = "order " + g.order;
+    $("presentation").innerHTML = K(g.latex + " \\;=\\; " + g.presentation);
+    const el = $("elements");
+    el.innerHTML = "";
+    const eg = document.createElement("span"); eg.className = "t"; eg.innerHTML = K("G = \\{");
+    el.appendChild(eg);
+    g.names.forEach((nm, i) => {
+      const sp = document.createElement("span"); sp.className = "t";
+      sp.innerHTML = K(nm + (i < g.names.length - 1 ? "," : "\\}"));
+      el.appendChild(sp);
+    });
+    const note = $("pres-note");
+    note.innerHTML = mathText(g.note) + " ";
+    if (g.permgroup) {
+      const conv = document.createElement("span"); conv.id = "conv-note";
+      note.appendChild(conv);
+    }
+    renderTables(g);
+    $("fact-sub").innerHTML = g.factors.length + " irreducible factors";
+    buildFactorization(g);
+    const zn = $("zetanote");
+    if (g.zetas.length) {
+      zn.innerHTML = "Here " + g.zetas.map(m => K("\\zeta_{" + m + "} = e^{2\\pi i/" + m + "}")).join(" and ") + ".";
+    } else {
+      zn.innerHTML = "";
+    }
+  }
+
+  function renderTables(g) {
+    const mt = $("multtable"); mt.innerHTML = ""; mt.appendChild(buildTable(g, "mult"));
+    const xm = $("xmatrix"); xm.innerHTML = ""; xm.appendChild(buildTable(g, "x"));
+    attachHighlight();
+    const conv = $("conv-note");
+    if (conv) {
+      conv.innerHTML = ltr
+        ? "Products are composed left-to-right: " + K("gh") + " means first " + K("g") + ", then " + K("h") + ". "
+        : "Products are composed right-to-left: " + K("gh") + " means first " + K("h") + ", then " + K("g") + ". ";
+      const btn = document.createElement("button"); btn.className = "linkbtn";
+      btn.textContent = ltr ? "switch to right-to-left" : "switch to left-to-right";
+      btn.addEventListener("click", () => { ltr = !ltr; renderTables(g); });
+      conv.appendChild(btn);
+    }
+  }
+  function mathText(s) {
+    return s.split("$").map((piece, i) => i % 2 ? K(piece) : piece).join("");
+  }
+
+  function step(d) {
+    const i = groups.findIndex(g => g.id === sel.value);
+    const j = (i + d + groups.length) % groups.length;
+    render(groups[j].id);
+  }
+  sel.addEventListener("change", () => render(sel.value));
+  $("prev").addEventListener("click", () => step(-1));
+  $("next").addEventListener("click", () => step(1));
+  document.addEventListener("keydown", ev => {
+    if (ev.target.tagName === "SELECT" || ev.target.tagName === "INPUT") return;
+    if (ev.key === "ArrowLeft") { step(-1); ev.preventDefault(); }
+    if (ev.key === "ArrowRight") { step(1); ev.preventDefault(); }
+  });
+  window.addEventListener("hashchange", () => { const id = location.hash.slice(1); if (byId[id]) render(id); });
+
+  const start = location.hash.slice(1);
+  render(byId[start] ? start : "C3");
+
+  // ---------- theme toggle (as on the course site) ----------
+  const b = $("themetoggle");
+  function effective() {
+    const a = document.documentElement.getAttribute("data-theme");
+    if (a) return a;
+    return window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  function icon() { b.textContent = effective() === "dark" ? "☀" : "☾"; }
+  b.addEventListener("click", () => {
+    const next = effective() === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("hwg-theme", next); } catch (e) {}
+    icon();
+  });
+  if (window.matchMedia) matchMedia("(prefers-color-scheme: dark)").addEventListener("change", icon);
+  icon();
+})();
+</script>
+</body>
+</html>
