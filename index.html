@@ -173,13 +173,14 @@ table.gt td, table.gt th {
   transition: background-color .08s;
 }
 table.gt th {
-  background: var(--code-bg);
+  background: var(--hover-bg);
+  color: var(--accent);
   font-weight: 400;
 }
 table.gt th.corner { color: var(--accent); }
-table.gt tr.hl th, table.gt th.hl { background: var(--hl-bg); }
-table.gt td.hl { background: var(--hover-bg); }
-table.gt td.hl2 { background: var(--hl-bg); }
+table.gt tr.hl th, table.gt th.hl { background: var(--accent); color: var(--bg); }
+table.gt td.hl { background: var(--hl-bg); }
+table.gt td.hl2 { background: var(--hl-bg); outline: 2px solid var(--accent); outline-offset: -2px; }
 table.gt td.idcell { color: var(--muted); }
 
 /* ---- polynomials ---- */
@@ -188,8 +189,8 @@ table.gt td.idcell { color: var(--muted); }
 table.gt.x thead th { visibility: hidden; }
 table.gt.x thead th.corner, table.gt.x tbody th { display: none; }
 table.gt.x td, table.gt.x th { border-color: transparent; }
-table.gt.x td.hl { background: var(--hover-bg); }
-table.gt.x td.hl2 { background: var(--hl-bg); }
+table.gt.x td.hl { background: var(--hl-bg); }
+table.gt.x td.hl2 { background: var(--hl-bg); outline: 2px solid var(--accent); outline-offset: -2px; }
 .bracket { position: absolute; bottom: 0; width: .55em; border: 2px solid var(--fg); }
 .bracket.left { left: 0; border-right: none; }
 .bracket.right { right: 0; border-left: none; }
